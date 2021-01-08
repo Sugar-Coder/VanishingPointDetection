@@ -1,5 +1,5 @@
 #include "VPDetection.h"
-#include "time.h"
+#include <ctime>
 #include <iostream>
 
 using namespace std;
