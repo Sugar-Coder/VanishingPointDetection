@@ -7,6 +7,43 @@ extern "C"
 using namespace std;
 using namespace cv;
 
+struct ArgInfo{
+    std::string inputImg;
+    bool doSave;
+    std::string outputImg;
+
+    explicit ArgInfo(std::string inFile) : inputImg(inFile), doSave(false) {}
+    ArgInfo(std::string inFile, std::string outFile) : inputImg(inFile), doSave(true), outputImg(outFile) {}
+};
+
+void printHelp(){
+    cout << endl;
+    cout << "Generate Image with vanishing point." << endl;
+    cout << "Usage:" << endl;
+    cout << "\tVanishingPoint -s ImageFilePath [-o ImageOutputName]" << endl;
+    cout << "Options:" << endl;
+    cout << "\t -s <path> \t indicate the location of the input image." << endl;
+    cout << "\t -o <path> \t indicate the location of the output image. If absent, only printed." << endl;
+}
+
+ArgInfo parseArg(int argc, char** argv) {
+    if (argc == 3 && !strcmp("-s", argv[1])) {
+        return ArgInfo(argv[2]);
+    }
+
+    if (argc == 5) {
+        if (!strcmp("-s", argv[1]) && !strcmp("-o", argv[3])) {
+            return ArgInfo(argv[2], argv[4]);
+        }
+        if (!strcmp("-s", argv[3]) && !strcmp("-o", argv[1])) {
+            return ArgInfo(argv[4], argv[1]);
+        }
+    }
+
+    printHelp();
+    exit(0);
+}
+
 
 // LSD line segment detection
 void LineDetect( cv::Mat image, double thLength, std::vector<std::vector<double> > &lines )
@@ -96,7 +133,8 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 
 int main(int argc, char** argv)
 {
-	string inPutImage = "../../images/P1020171.jpg";
+    ArgInfo argInfo = parseArg(argc, argv);
+	string inPutImage = argInfo.inputImg;
 
 	cv::Mat image= cv::imread( inPutImage );
 	if ( image.empty() )
@@ -123,4 +161,8 @@ int main(int argc, char** argv)
 	drawClusters( image, lines, clusters );
 	imshow("",image);
 	cv::waitKey( 0 );
+    if (argInfo.doSave) {
+        cv::imwrite(argInfo.outputImg, image);
+        cout << "Output image saved." << endl;
+    }
 }
