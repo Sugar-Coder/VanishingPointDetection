@@ -15,7 +15,7 @@ void LineDetect( cv::Mat image, double thLength, std::vector<std::vector<double>
 	if ( image.channels() == 1 )
 		grayImage = image;
 	else
-		cv::cvtColor(image, grayImage, CV_BGR2GRAY);
+		cv::cvtColor(image, grayImage, COLOR_BGR2GRAY);
 
 	image_double imageLSD = new_image_double( grayImage.cols, grayImage.rows );
 	unsigned char* im_src = (unsigned char*) grayImage.data;
@@ -76,7 +76,7 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 		cv::Point pt_e = cv::Point( lines[idx][2], lines[idx][3]);
 		cv::Point pt_m = ( pt_s + pt_e ) * 0.5;
 
-		cv::line( img, pt_s, pt_e, cv::Scalar(0,0,0), 2, CV_AA );
+		cv::line( img, pt_s, pt_e, cv::Scalar(0,0,0), 2, LINE_AA);
 	}
 
 	for ( int i = 0; i < clusters.size(); ++i )
@@ -89,19 +89,19 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 			cv::Point pt_e = cv::Point( lines[idx][2], lines[idx][3] );
 			cv::Point pt_m = ( pt_s + pt_e ) * 0.5;
 
-			cv::line( img, pt_s, pt_e, lineColors[i], 2, CV_AA );
+			cv::line( img, pt_s, pt_e, lineColors[i], 2, LINE_AA );
 		}
 	}
 }
 
-void main()
+int main()
 {
 	string inPutImage = "D:\\DevelopCenter\\VanishingPoints\\datasets\\YorkUrbanDB\\P1020171\\P1020171.jpg";
 
 	cv::Mat image= cv::imread( inPutImage );
 	if ( image.empty() )
 	{
-		printf( "Load image error : %s\n", inPutImage );
+		printf( "Load image error : %s\n", inPutImage.c_str() );
 	}
 
 	// LSD line segment detection
