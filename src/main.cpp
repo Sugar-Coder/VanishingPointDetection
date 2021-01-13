@@ -7,41 +7,14 @@ extern "C"
 using namespace std;
 using namespace cv;
 
-struct ArgInfo{
-    std::string inputImg;
-    bool doSave;
-    std::string outputImg;
-
-    explicit ArgInfo(std::string inFile) : inputImg(inFile), doSave(false) {}
-    ArgInfo(std::string inFile, std::string outFile) : inputImg(inFile), doSave(true), outputImg(outFile) {}
-};
-
 void printHelp(){
     cout << endl;
     cout << "Generate Image with vanishing point." << endl;
     cout << "Usage:" << endl;
-    cout << "\tVanishingPoint -s ImageFilePath [-o ImageOutputName]" << endl;
+    cout << "\tVanishingPoint -s=ImageFilePath [-o=ImageOutputName]" << endl;
     cout << "Options:" << endl;
-    cout << "\t -s <path> \t indicate the location of the input image." << endl;
-    cout << "\t -o <path> \t indicate the location of the output image. If absent, only printed." << endl;
-}
-
-ArgInfo parseArg(int argc, char** argv) {
-    if (argc == 3 && !strcmp("-s", argv[1])) {
-        return ArgInfo(argv[2]);
-    }
-
-    if (argc == 5) {
-        if (!strcmp("-s", argv[1]) && !strcmp("-o", argv[3])) {
-            return ArgInfo(argv[2], argv[4]);
-        }
-        if (!strcmp("-s", argv[3]) && !strcmp("-o", argv[1])) {
-            return ArgInfo(argv[4], argv[1]);
-        }
-    }
-
-    printHelp();
-    exit(0);
+    cout << "\t -s=<path> \t indicate the location of the input image." << endl;
+    cout << "\t -o=<path> \t indicate the location of the output image. If absent, only printed." << endl;
 }
 
 
@@ -133,13 +106,22 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 
 int main(int argc, char** argv)
 {
-    ArgInfo argInfo = parseArg(argc, argv);
-	string inPutImage = argInfo.inputImg;
+    const string keys =
+            "{help h |      | print this message   }"
+            "{s | | the input image, required}"
+            "{o | | Optional, the output image path, if absent, only printed}";
+    cv::CommandLineParser parser(argc, argv, keys);
 
-	cv::Mat image= cv::imread( inPutImage );
+    string inputImage = parser.get<string>("s");
+    if (parser.has("help") || inputImage.empty() || inputImage == "true") {
+        printHelp();
+        return 0;
+    }
+
+	cv::Mat image= cv::imread(inputImage );
 	if ( image.empty() )
 	{
-		printf( "Load image error : %s\n", inPutImage.c_str() );
+		printf("Load image error : %s\n", inputImage.c_str() );
 		return -1;
 	}
 
@@ -149,8 +131,10 @@ int main(int argc, char** argv)
 	LineDetect( image, thLength, lines );
 
 	// Camera internal parameters
-	cv::Point2d pp( 307, 251 );        // Principle point (in pixel)
-	double f = 6.053 / 0.009;          // Focal length (in pixel)
+//	cv::Point2d pp( 307, 251 );        // Principle point (in pixel)
+//	double f = 6.053 / 0.009;          // Focal length (in pixel)
+    cv::Point2d pp(image.cols / 2, image.rows / 2);
+    double f = 1.2*(std::max(image.cols, image.rows));
 
 	// Vanishing point detection
 	std::vector<cv::Point3d> vps;              // Detected vanishing points (in pixel)
@@ -161,8 +145,11 @@ int main(int argc, char** argv)
 	drawClusters( image, lines, clusters );
 	imshow("",image);
 	cv::waitKey( 0 );
-    if (argInfo.doSave) {
-        cv::imwrite(argInfo.outputImg, image);
+
+	string outputImg = parser.get<string>("o");
+    if (outputImg.length() > 0 && outputImg != "true") {
+        cv::imwrite(outputImg, image);
         cout << "Output image saved." << endl;
     }
+    return 0;
 }
