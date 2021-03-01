@@ -22,4 +22,6 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${CONAN_LIBS})
 
 # learning cv
 ADD_EXECUTABLE(cvprac learncv/practice.cpp)
+ADD_EXECUTABLE(filestore learncv/filestorage.cpp)
 TARGET_LINK_LIBRARIES(cvprac ${CONAN_LIBS})
+TARGET_LINK_LIBRARIES(filestore ${CONAN_LIBS})

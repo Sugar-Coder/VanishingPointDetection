@@ -89,7 +89,9 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 		cv::line( img, pt_s, pt_e, cv::Scalar(0,0,0), 2, LINE_AA);
 	}
 
-	for ( int i = 0; i < clusters.size(); ++i )
+	// 需要画出的灭点线段数量
+    int drawVPNum = clusters.size();  // 3
+    for ( int i = 0; i < drawVPNum; ++i )
 	{
 		for ( int j = 0; j < clusters[i].size(); ++j )
 		{
@@ -109,7 +111,8 @@ int main(int argc, char** argv)
     const string keys =
             "{help h |      | print this message   }"
             "{s | | the input image, required}"
-            "{o | | Optional, the output image path, if absent, only printed}";
+            "{o | | Optional, the output image path, if absent, only printed}"
+            "{vp| false | Optional, dump the vanishing point to json file}";
     cv::CommandLineParser parser(argc, argv, keys);
 
     string inputImage = parser.get<string>("s");
@@ -124,6 +127,7 @@ int main(int argc, char** argv)
 		printf("Load image error : %s\n", inputImage.c_str() );
 		return -1;
 	}
+	bool dump2json = parser.get<bool>("vp");
 
 	// LSD line segment detection
 	double thLength = 30.0;
@@ -139,7 +143,7 @@ int main(int argc, char** argv)
 	// Vanishing point detection
 	std::vector<cv::Point3d> vps;              // Detected vanishing points (in pixel)
 	std::vector<std::vector<int> > clusters;   // Line segment clustering results of each vanishing point
-	VPDetection detector;
+	VPDetection detector(dump2json);
 	detector.run( lines, pp, f, vps, clusters );
 
 	drawClusters( image, lines, clusters );

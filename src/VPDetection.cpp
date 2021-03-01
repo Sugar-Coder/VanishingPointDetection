@@ -10,6 +10,9 @@ VPDetection::VPDetection(void)
 {
 }
 
+VPDetection::VPDetection(bool d2j) {
+    this->dump2Json = d2j;
+}
 
 VPDetection::~VPDetection(void)
 {
@@ -71,7 +74,7 @@ void VPDetection::getVPHypVia2Lines( std::vector<std::vector<cv::Point3d> > &vpH
 		double dy = lines[i][1] - lines[i][3];
 		lineInfos[i].length = sqrt( dx * dx + dy * dy );
 
-		lineInfos[i].orientation = atan2( dy, dx );
+		lineInfos[i].orientation = atan2( dy, dx ); // arctan(dy/dx)
 		if ( lineInfos[i].orientation < 0 )
 		{
 			lineInfos[i].orientation += CV_PI;
@@ -132,7 +135,7 @@ void VPDetection::getVPHypVia2Lines( std::vector<std::vector<cv::Point3d> > &vpH
 			vp3 *= 1.0 / N;
 			if ( vp3(2) < 0 ) { vp3 *= -1.0; }		
 
-			//
+			// vp1 is same, sample vp2
 			vpHypo[count][0] = cv::Point3d( vp1(0), vp1(1), vp1(2) );
 			vpHypo[count][1] = cv::Point3d( vp2(0), vp2(1), vp2(2) );
 			vpHypo[count][2] = cv::Point3d( vp3(0), vp3(1), vp3(2) );
@@ -308,7 +311,16 @@ void VPDetection::lines2Vps( double thAngle, std::vector<cv::Point3d> &vps, std:
 	{
 		vp2D[i].x =  vps[i].x * f / vps[i].z + pp.x;
 		vp2D[i].y =  vps[i].y * f / vps[i].z + pp.y;
+		cout << "vp2D : x= " << vp2D[i].x << ", y = " << vp2D[i].y << endl;
 	}
+
+    if (this->dump2Json) {
+        FileStorage fs("out.json", FileStorage::WRITE);
+        fs << "vp1" << vp2D[0];
+        fs << "vp2" << vp2D[1];
+        fs << "vp3" << vp2D[2];
+        cout << "Dump to json file: out.json" << endl;
+    }
 
 	for ( int i = 0; i < lines.size(); ++ i )
 	{
