@@ -33,6 +33,8 @@ public:
 
 	void lines2Vps( double thAngle, std::vector<cv::Point3d> &vps, std::vector<std::vector<int> > &clusters );
 
+	void setVpJsonFile(std::string filename);
+
 private:
 	std::vector<std::vector<double> > lines;
 	std::vector<LineInfo> lineInfos;
@@ -40,6 +42,7 @@ private:
 	double f;
 	double noiseRatio;
 	bool dump2Json;
+	std::string vpJsonFile;
 };
 
 #endif // _VP_DETECTION_H_

@@ -315,11 +315,11 @@ void VPDetection::lines2Vps( double thAngle, std::vector<cv::Point3d> &vps, std:
 	}
 
     if (this->dump2Json) {
-        FileStorage fs("out.json", FileStorage::WRITE);
+        FileStorage fs(this->vpJsonFile+"_vps.json", FileStorage::WRITE);
         fs << "vp1" << vp2D[0];
         fs << "vp2" << vp2D[1];
         fs << "vp3" << vp2D[2];
-        cout << "Dump to json file: out.json" << endl;
+        cout << "Dump to json file: " << this->vpJsonFile << endl;
     }
 
 	for ( int i = 0; i < lines.size(); ++ i )
@@ -370,4 +370,8 @@ void VPDetection::lines2Vps( double thAngle, std::vector<cv::Point3d> &vps, std:
 			clusters[bestIdx].push_back( i );
 		}
 	}
+}
+
+void VPDetection::setVpJsonFile(std::string filename) {
+    this->vpJsonFile = std::move(filename);
 }

@@ -15,6 +15,7 @@ void printHelp(){
     cout << "Options:" << endl;
     cout << "\t -s=<path> \t indicate the location of the input image." << endl;
     cout << "\t -o=<path> \t indicate the location of the output image. If absent, only printed." << endl;
+    cout << "\t -vp \t\t if set, store the vanishing point info to json file" << endl;
 }
 
 
@@ -106,12 +107,18 @@ void drawClusters( cv::Mat &img, std::vector<std::vector<double> > &lines, std::
 	}
 }
 
+/**
+ * 生成的 ***_vps.json 文件在可执行文件的同一目录
+ * @param argc
+ * @param argv
+ * @return
+ */
 int main(int argc, char** argv)
 {
     const string keys =
             "{help h |      | print this message   }"
             "{s | | the input image, required}"
-            "{o | | Optional, the output image path, if absent, only printed}"
+            "{o | false | Optional, the output image path, if absent, only printed}"
             "{vp| false | Optional, dump the vanishing point to json file}";
     cv::CommandLineParser parser(argc, argv, keys);
 
@@ -144,14 +151,20 @@ int main(int argc, char** argv)
 	std::vector<cv::Point3d> vps;              // Detected vanishing points (in pixel)
 	std::vector<std::vector<int> > clusters;   // Line segment clustering results of each vanishing point
 	VPDetection detector(dump2json);
+    // 设置输出的灭点文件名
+	string vpJsonFile = inputImage.substr(inputImage.find_last_of('/')+1);
+	vpJsonFile = vpJsonFile.substr(0, vpJsonFile.find('.'));
+	detector.setVpJsonFile(vpJsonFile);
+
 	detector.run( lines, pp, f, vps, clusters );
 
-	drawClusters( image, lines, clusters );
-	imshow("",image);
-	cv::waitKey( 0 );
-
 	string outputImg = parser.get<string>("o");
-    if (outputImg.length() > 0 && outputImg != "true") {
+    if (outputImg.length() > 0 && outputImg != "false" && outputImg != "true") {
+
+        drawClusters( image, lines, clusters );
+        imshow("",image);
+        cv::waitKey( 0 );
+
         cv::imwrite(outputImg, image);
         cout << "Output image saved." << endl;
     }
